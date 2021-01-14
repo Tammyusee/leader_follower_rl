@@ -1,0 +1,5 @@
+<launch>
+    <rosparam command="load" file="$(find moving_cube_training)/config/start_training_v2_1_deepq.yaml" />
+    <!-- Launch the training system -->
+    <node pkg="moving_cube_training" name="start_training_v2_1_deepq" type="start_training_v2_1_deepq.py" output="screen"/>
+</launch>
