@@ -6,5 +6,6 @@ We reccomend to use a VirtualEnvironment for Python3 to do so.
 1. source ~/.py3venv/bin/activate
 2. Install the requirements:
 
-
+** This project is made to only verify the opeanai_ros code.
+** Do not modify the code, keep the objective original!
 
