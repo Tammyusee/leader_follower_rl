@@ -23,7 +23,7 @@ class Plot:
 
     def start_plotting(self):
         plt.plot(self.list_ep, self.list_r)
-        rospy.loginfo("\n\nPlotting...\n")
+        rospy.loginfo("\n\nPlotting a reward graph...\n")
         plt.ylabel('reward')
         plt.xlabel('episode')
         plt.show()
@@ -31,11 +31,6 @@ class Plot:
     def listener(self):
         rospy.Subscriber("odom", Odometry, self.odom_callback)
         rospy.Subscriber("openai/reward", RLExperimentInfo, self.reward_callback)
-
-        # plt.plot(self.list_ep, self.list_r)
-        # plt.ylabel('y')
-        # plt.xlabel('x')
-        # plt.show()
 
     def odom_callback(self, data):
         self.x = data.pose.pose.position.x
@@ -45,11 +40,14 @@ class Plot:
         # self.list_y.append(self.y)
 
     def reward_callback(self, data):
-        self.ep = data.episode_number
-        self.r = data.episode_reward
-        rospy.loginfo("received r")
-        self.list_ep.append(self.ep)
-        self.list_r.append(self.r)
+        if data.episode_number is not self.ep:
+            self.ep = data.episode_number
+            self.r = data.episode_reward
+
+            rospy.loginfo("ep %d, r = %d", self.ep, self.r)
+
+            self.list_ep.append(self.ep)
+            self.list_r.append(self.r)
 
 
 if __name__ == '__main__':
@@ -58,7 +56,6 @@ if __name__ == '__main__':
     pllt.__init__()
 
     while not rospy.is_shutdown():
-        # rospy.loginfo("\n\nPlotting...\n")
         rospy.spin()
 
     pllt.start_plotting()
