@@ -76,10 +76,12 @@ if __name__ == '__main__':
         for i in range(nsteps):
             rospy.logwarn("############### Start Step=>" + str(i))
             # Pick an action based on the current state
-            action= qlearn.chooseAction(state)
+            action = qlearn.chooseAction(state)
             # rospy.logwarn("Next action is:", action)
             # Execute the action in the environment and get feedback
-            observation, reward, done, info = env.step(action)
+            observation, reward, done, info = env.step(action)  # the function step() will call _set_action()
+
+            # choose_action -> set_action -> learn_q
 
             # rospy.logwarn(str(observation) + " " + str(reward))
             cumulated_reward += reward
