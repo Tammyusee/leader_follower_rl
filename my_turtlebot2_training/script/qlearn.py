@@ -84,6 +84,7 @@ class QLearn:
         return action
 
     def learn(self, state1, action1, reward, state2):
+	print("UPDATING q-table")
         maxqnew = max([self.getQ(state2, a) for a in self.actions])  # max q value of newState-action pair (q*(s',a))
         print("UPDATING q-table")
         self.learnQ(state1, action1, reward, reward + self.gamma*maxqnew)
