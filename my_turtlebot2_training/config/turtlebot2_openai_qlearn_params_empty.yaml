@@ -11,4 +11,4 @@ turtlebot2: #namespace
     epsilon_discount: 0.999
     nepisodes: 2000
     nsteps: 10000
-    running_step: 0.04 #0.06 # Time for each step
+    running_step: 0.06 #0.06 # Time for each step

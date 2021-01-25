@@ -192,13 +192,12 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         #     print("going backward")
         #     linear_speed = -self.linear_forward_speed * (self.combined_action_list[action][1] + 1)
         #     angular_speed = 0
-
-        if self.combined_action_list[action][0] == 3:
+        if self.combined_action_list[action][0] == 2:
             # left
             print("turning left")
             linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
             angular_speed = self.angular_speed / (self.combined_action_list[action][2] + 1)
-        elif self.combined_action_list[action][0] == 4:
+        elif self.combined_action_list[action][0] == 3:
             # right
             print("turning right")
             linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
@@ -214,11 +213,15 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         #     linear_speed = 0
         #     angular_speed = 0
 
+        # linear_forward_speed: 0.3
+        # linear_turn_speed: 0.2
+        # angular_speed: 0.1
+
         # print("------------------")
         # print(self.combined_action_list[action])
         # print("action", action)
-        print("lin_speed", linear_speed)
-        print("ang_speed", angular_speed)
+        # print("lin_speed = ", linear_speed)
+        # print("ang_speed = ", angular_speed)
         # print("------------------")
 
         # We tell TurtleBot2 the linear and angular speed to set to execute
@@ -245,7 +248,7 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         y_position = odometry.pose.pose.position.y
 
         # We round to only two decimals to avoid very big Observation space
-        odometry_array = [round(x_position, 2),round(y_position, 2)]
+        odometry_array = [round(x_position, 2), round(y_position, 2)]
 
         # We only want the X and Y position and the Yaw
 
@@ -288,7 +291,6 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
             #     self._episode_done = True
 
             MAX_DEV = self.desired_distancde.x
-            print("MAX DEV ", MAX_DEV)
             # MAX_DEV = 0.2
             # MIN_DEV = -0.2
 
@@ -302,10 +304,10 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
 
             if distance_diff_x <= self.desired_distancde.x + MAX_DEV:
                 if distance_diff_y <= self.desired_distancde.y + MAX_DEV:
-                    print("Follower is in a desired range...")
+                    # print("Follower is in a desired range...")
                     if abs(self.leader_odom.pose.pose.position.x >= 5.90):
                         self._episode_done = True
-                        print("The leader has reached a goal!!")
+                        print("***** The leader has reached a goal!! *****")
                 else:
                     rospy.logerr("TurtleBot to Far in Y Pos")
                     self._episode_done = True
@@ -340,13 +342,13 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
             reward_discount = (distance_discount * self.distance_reward) / self.desired_distancde.x
             reward = self.distance_reward - reward_discount
 
-            print("-----------------------------------------------")
-            print("distance difference = ", distance_diff)
-            print("distance discount = ", distance_discount)
-            print("reward discount % = ", (distance_discount * 100) / self.desired_distancde.x)
-            print("reward_discount = ", reward_discount)
-            print("reward = ", reward)
-            print("-----------------------------------------------")
+            # print("-----------------------------------------------")
+            # print("distance difference = ", distance_diff)
+            # print("distance discount = ", distance_discount)
+            # print("reward discount % = ", (distance_discount * 100) / self.desired_distancde.x)
+            # print("reward_discount = ", reward_discount)
+            # print("reward = ", reward)
+            # print("-----------------------------------------------")
 
             # if self.last_action == "FORWARDS":
             #     reward = self.forwards_reward

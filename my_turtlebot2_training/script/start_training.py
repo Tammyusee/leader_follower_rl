@@ -74,7 +74,7 @@ if __name__ == '__main__':
         # env.render()
         # for each episode, we test the robot for nsteps
         for i in range(nsteps):
-            rospy.logwarn("############### Start Step=>" + str(i))
+            rospy.logwarn("# Start Step=>" + str(i))
             # Pick an action based on the current state
             action = qlearn.chooseAction(state)
             # rospy.logwarn("Next action is:", action)
@@ -95,6 +95,7 @@ if __name__ == '__main__':
             rospy.logwarn("# action that we took=>" + str(action))
             rospy.logwarn("# reward that action gave=>" + str(reward))
             rospy.logwarn("# episode cumulated_reward=>" + str(cumulated_reward))
+            print("\n")
             # rospy.logwarn("# State in which we will start next step=>" + str(nextState))
             qlearn.learn(state, action, reward, nextState)
 
