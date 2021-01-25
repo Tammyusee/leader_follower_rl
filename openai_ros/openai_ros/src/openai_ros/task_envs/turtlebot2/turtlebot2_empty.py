@@ -164,12 +164,12 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         rospy.logdebug("Start Set Action ==>"+str(action))
         # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
 
-        if self.combined_action_list[action][0] == 2:
+        if self.combined_action_list[action][0] == 1:
             # left
             print("turning left")
             linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
             angular_speed = self.angular_speed / (self.combined_action_list[action][2] + 1)
-        elif self.combined_action_list[action][0] == 3:
+        elif self.combined_action_list[action][0] == 2:
             # right
             print("turning right")
             linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
