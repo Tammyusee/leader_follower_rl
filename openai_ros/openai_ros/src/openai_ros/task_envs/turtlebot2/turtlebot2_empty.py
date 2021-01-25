@@ -168,12 +168,16 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
             # left
             print("turning left")
             linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
+<<<<<<< HEAD
             angular_speed = self.angular_speed / (self.combined_action_list[action][2] + 1)
+=======
+            angular_speed = -1 * self.angular_speed / (self.combined_action_list[action][2] + 1)
+>>>>>>> 8e81a93e2a7b3c3d54625b6ec09da0b0a1519fa9
         elif self.combined_action_list[action][0] == 2:
             # right
             print("turning right")
             linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
-            angular_speed = -self.angular_speed / (self.combined_action_list[action][2] + 1)
+            angular_speed = self.angular_speed / (self.combined_action_list[action][2] + 1)
         else:
             # forward
             print("going forward")
@@ -192,8 +196,8 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         # print("------------------")
         # print(self.combined_action_list[action])
         # print("action", action)
-        # print("lin_speed = ", linear_speed)
-        # print("ang_speed = ", angular_speed)
+        print("lin_speed = ", linear_speed)
+        print("ang_speed = ", angular_speed)
         # print("------------------")
 
         # We tell TurtleBot2 the linear and angular speed to set to execute
