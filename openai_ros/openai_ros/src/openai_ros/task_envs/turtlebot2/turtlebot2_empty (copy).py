@@ -161,9 +161,37 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         based on the action number given.
         :param action: The action integer that set s what movement to do next.
         """
+
         rospy.logdebug("Start Set Action ==>"+str(action))
         # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
 
+        # if action == 0:  # FORWARD
+        #     linear_speed = self.linear_forward_speed
+        #     angular_speed = 0.0
+        #     self.last_action = "FORWARDS"
+        # elif action == 1:  # LEFT
+        #     linear_speed = self.linear_turn_speed
+        #     angular_speed = self.angular_speed
+        #     self.last_action = "TURN_LEFT"
+        # elif action == 2:  # RIGHT
+        #     linear_speed = self.linear_turn_speed
+        #     angular_speed = -1*self.angular_speed
+        #     self.last_action = "TURN_RIGHT"
+
+        # movement = self.combined_action_list[action][0]
+        # lin_vel = self.combined_action_list[action][1]
+        # ang_vel = self.combined_action_list[action][2]
+
+        # if self.combined_action_list[action][0] == 1:
+        #     # forward
+        #     print("going forward")
+        #     linear_speed = self.linear_forward_speed * (self.combined_action_list[action][1] + 1)
+        #     angular_speed = 0
+        # elif self.combined_action_list[action][0] == 2:
+        #     # backward
+        #     print("going backward")
+        #     linear_speed = -self.linear_forward_speed * (self.combined_action_list[action][1] + 1)
+        #     angular_speed = 0
         if self.combined_action_list[action][0] == 2:
             # left
             print("turning left")
