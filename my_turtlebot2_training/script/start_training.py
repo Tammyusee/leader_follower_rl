@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
         cumulated_reward = 0
         done = False
-        if qlearn.epsilon > 0.01:  # 0.05
+        if qlearn.epsilon > 0.05:  # 0.05
             qlearn.epsilon *= epsilon_discount
 
         # Initialize the environment and get first state of the robot

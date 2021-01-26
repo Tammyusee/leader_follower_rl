@@ -45,9 +45,11 @@ class Plot:
             self.r = data.episode_reward
             rospy.loginfo("ep %d, r = %d", self.ep, self.r)
 
-            if data.episode_number % 10 is 0:
-                self.list_ep.append(self.ep)
-                self.list_r.append(self.r)
+            # if data.episode_number % 10 is 0:
+            #     self.list_ep.append(self.ep)
+            #     self.list_r.append(self.r)
+            self.list_ep.append(self.ep)
+            self.list_r.append(self.r)
 
 
 if __name__ == '__main__':
