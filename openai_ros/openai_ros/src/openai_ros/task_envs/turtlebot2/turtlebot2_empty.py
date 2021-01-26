@@ -277,7 +277,7 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
             if distance_diff_x <= self.desired_distancde.x + MAX_DEV:
                 if distance_diff_y <= self.desired_distancde.y + MAX_DEV:
                     # print("Follower is in a desired range...")
-                    if abs(self.leader_odom.pose.pose.position.x >= 5.90):
+                    if abs(self.leader_odom.pose.pose.position.x >= 2.90):
                         self._episode_done = True
                         print("***** The leader has reached a goal!! *****")
                 else:
@@ -412,7 +412,7 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
 
         if distance_diff_x <= self.desired_distancde.x + MAX_DEV and distance_diff_x >= self.desired_distancde.x + MIN_DEV:
             if distance_diff_y <= self.desired_distancde.y + MAX_DEV and distance_diff_y >= self.desired_distancde.y + MIN_DEV:
-                if abs(self.leader_odom.pose.pose.position.x >= 5.90):
+                if abs(self.leader_odom.pose.pose.position.x >= 2.90):
                     is_in_desired_pos = True
 
         return is_in_desired_pos

@@ -268,7 +268,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
 
         leader_cmd_vel_value = Twist()
 
-        if self.leader_odom.pose.pose.position.x >= 5.9:
+        if self.leader_odom.pose.pose.position.x >= 2.9:
             leader_cmd_vel_value.linear.x = 0.0
             leader_cmd_vel_value.angular.z = 0.0
         else:
