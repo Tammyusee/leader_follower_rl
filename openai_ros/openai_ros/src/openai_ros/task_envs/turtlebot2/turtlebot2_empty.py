@@ -125,12 +125,8 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
 
         self.cumulated_steps = 0.0
 
-        # print("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
         self.leader_odom = Odometry()
-        # self.leader_odom = self.get_leader_odom()
-        # print(self.leader_odom)
-        # print("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
-
+        self.MAX_DEV = 0.2
 
     def _set_init_pose(self):
         """Sets the Robot in its init pose
@@ -243,6 +239,42 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
             current_position.y = observations[-1]
             current_position.z = 0.0
 
+            self.leader_odom, count = self.get_leader_odom()
+
+            desired_x = self.leader_odom.pose.pose.position.x - self.desired_distancde.x
+            desired_y = 0
+
+            if abs(self.leader_odom.pose.pose.position.x) >= self.leader_goal_x:
+                print("LEADER HAS REACHED THE GOAL, WILL WAIT A BIT FOR THE FOLLOWER")
+                if count >= 100:
+                    print("THE LEADER IS DONE WAITING!!")
+                    if self.is_in_desired_position(current_position):  # distance_diff <= self.desired_distancde.x + self.MAX_DEV:
+                        print("A follower is IN the desired distance but a bit delayed    *1*")
+                    else:
+                        print("A follower is TOO FAR from the desired distance")
+                    self._episode_done = True
+                elif self.is_in_desired_position(current_position):
+                    print("A follower is IN the desired distance    *2*")
+                    self._episode_done = True
+                # elif abs(current_position.x - desired_x) >= self.desired_distancde.x and count >= 50:
+                #     print("A follower is WAYYY TOO FAR from X desired pose     *OUTSIDE*")
+                #
+                #     print("desired_x = ", desired_x)
+                #     print("current_position.x = ", current_position.x)
+                #     print("abs(current_position.x - desired_x) = ", abs(current_position.x - desired_x))
+                #     print("self.desired_distancde.x / 2 = ", self.desired_distancde.x)
+                #
+                #     self._episode_done = True
+                # elif abs(current_position.y - desired_y) >= self.desired_distancde.y and count >= 50:
+                #     print("A follower is WAYYY TOO FAR from Y desired pose     *OUTSIDE*")
+                #
+                #     print("desired_y = ", desired_y)
+                #     print("current_position.y = ", current_position.y)
+                #     print("abs(current_position.y - desired_y) = ", abs(current_position.y - desired_y))
+                #     print("self.desired_distancde.y = ", self.desired_distancde.y)
+                #
+                #     self._episode_done = True
+
             # MAX_X = 6.0
             # MIN_X = -1.0
             # MAX_Y = 3.0
@@ -262,34 +294,9 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
             #     rospy.logerr("TurtleBot to Far in X Pos ==>"+str(current_position.x))
             #     self._episode_done = True
 
-            MAX_DEV = self.desired_distancde.x
-            # MAX_DEV = 0.2
-            # MIN_DEV = -0.2
-
-            self.leader_odom = self.get_leader_odom()
-
-            distance_diff_x = abs(abs(self.leader_odom.pose.pose.position.x) - abs(current_position.x))
-            distance_diff_y = abs(abs(self.leader_odom.pose.pose.position.y) - abs(current_position.y))
-
-            # if distance_diff_x <= self.desired_distancde.x + MAX_DEV and distance_diff_x >= self.desired_distancde.x + MIN_DEV:
-            #     if distance_diff_y <= self.desired_distancde.y + MAX_DEV and distance_diff_y >= self.desired_distancde.y + MIN_DEV:
-
-            if distance_diff_x <= self.desired_distancde.x + MAX_DEV:
-                if distance_diff_y <= self.desired_distancde.y + MAX_DEV:
-                    # print("Follower is in a desired range...")
-                    if abs(self.leader_odom.pose.pose.position.x >= 5.90):
-                        self._episode_done = True
-                        print("***** The leader has reached a goal!! *****")
-                else:
-                    rospy.logerr("TurtleBot to Far in Y Pos")
-                    self._episode_done = True
-            else:
-                rospy.logerr("TurtleBot to Far in X Pos")
-                self._episode_done = True
-
         return self._episode_done
-    #######################################################################################################
-        ##################### this part has to be changed ############################
+
+        ##################### this part might has to be changed ############################
         # TO ADD #
         # distance reward
         # orientation reward
@@ -313,6 +320,11 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
             distance_discount = abs(distance_diff - self.desired_distancde.x)
             reward_discount = (distance_discount * self.distance_reward) / self.desired_distancde.x
             reward = self.distance_reward - reward_discount
+        else:
+            if self.is_in_desired_position(current_position):  # might need to define new end_episode condition!!
+                reward = self.end_episode_points
+            else:
+                reward = -1 * self.end_episode_points
 
             # print("-----------------------------------------------")
             # print("distance difference = ", distance_diff)
@@ -321,25 +333,6 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
             # print("reward_discount = ", reward_discount)
             # print("reward = ", reward)
             # print("-----------------------------------------------")
-
-            # if self.last_action == "FORWARDS":
-            #     reward = self.forwards_reward
-            # else:
-            #     reward = self.turn_reward
-            #
-            # # If there has been a decrease in the distance to the desired point, we reward it
-            # if distance_difference <= 0.0:  # might need to add "and > -0.5" ??
-            #     rospy.logwarn("DECREASE IN DISTANCE GOOD")
-            #     reward += self.forwards_reward
-            # else:
-            #     rospy.logerr("ENCREASE IN DISTANCE BAD")
-            #     reward += 0
-
-        else:
-            if self.is_in_desired_position(current_position):  # might need to define new end_episode condition!!
-                reward = self.end_episode_points
-            else:
-                reward = -1 * self.end_episode_points
 
         self.previous_distance_from_des_point = distance_from_des_point
 
@@ -389,6 +382,17 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         """
         is_in_desired_pos = False
 
+        self.leader_odom, count_x = self.get_leader_odom()
+
+        xfyf = numpy.array((current_position.x, current_position.y))
+        xlyl = numpy.array((self.leader_odom.pose.pose.position.x, self.leader_odom.pose.pose.position.y))
+        distance_diff = numpy.linalg.norm(xfyf - xlyl)
+
+        if distance_diff <= self.desired_distancde.x + self.MAX_DEV:
+            if abs(self.leader_odom.pose.pose.position.x >= self.leader_goal_x):
+                print("is_in_desired_pose = True **********************")
+                is_in_desired_pos = True
+
         # x_pos_plus = self.desired_point.x + epsilon
         # x_pos_minus = self.desired_point.x - epsilon
         # y_pos_plus = self.desired_point.y + epsilon
@@ -402,18 +406,8 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         #
         # is_in_desired_pos = x_pos_are_close and y_pos_are_close
 
-        MAX_DEV = 0.2
-        MIN_DEV = -0.2
-
-        self.leader_odom = self.get_leader_odom()
-
-        distance_diff_x = abs(abs(self.leader_odom.pose.pose.position.x) - abs(current_position.x))
-        distance_diff_y = abs(abs(self.leader_odom.pose.pose.position.y) - abs(current_position.y))
-
-        if distance_diff_x <= self.desired_distancde.x + MAX_DEV and distance_diff_x >= self.desired_distancde.x + MIN_DEV:
-            if distance_diff_y <= self.desired_distancde.y + MAX_DEV and distance_diff_y >= self.desired_distancde.y + MIN_DEV:
-                if abs(self.leader_odom.pose.pose.position.x >= 5.90):
-                    is_in_desired_pos = True
+        # MAX_DEV = 0.2
+        # MIN_DEV = -0.2
 
         return is_in_desired_pos
     #######################################################################################################

@@ -87,6 +87,9 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         self._cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         self._leader_cmd_vel_pub = rospy.Publisher('/leader/cmd_vel', Twist, queue_size=1)
 
+        self.leader_cmd_vel_value = Twist()
+        self.leader_goal_x = 4.00
+        self.count = 0
 
         self._check_publishers_connection()
 
@@ -266,14 +269,14 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         :return:
         """
 
-        leader_cmd_vel_value = Twist()
-
-        if self.leader_odom.pose.pose.position.x >= 5.9:
-            leader_cmd_vel_value.linear.x = 0.0
-            leader_cmd_vel_value.angular.z = 0.0
+        if self.leader_odom.pose.pose.position.x >= self.leader_goal_x:
+            self.leader_cmd_vel_value.linear.x = 0.0
+            self.leader_cmd_vel_value.angular.z = 0.0
+            self.count += 1
         else:
-            leader_cmd_vel_value.linear.x = 0.15
-            leader_cmd_vel_value.angular.z = 0.0
+            self.leader_cmd_vel_value.linear.x = 0.15
+            self.leader_cmd_vel_value.angular.z = 0.0
+            self.count = 0
 
         cmd_vel_value = Twist()
         cmd_vel_value.linear.x = linear_speed
@@ -281,7 +284,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         rospy.logdebug("TurtleBot2 Base Twist Cmd>>" + str(cmd_vel_value))
         self._check_publishers_connection()
         self._cmd_vel_pub.publish(cmd_vel_value)
-        self._leader_cmd_vel_pub.publish(leader_cmd_vel_value)
+        self._leader_cmd_vel_pub.publish(self.leader_cmd_vel_value)
         time.sleep(0.2)
         #time.sleep(0.02)
         """
@@ -379,7 +382,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         return self.odom
 
     def get_leader_odom(self):
-        return self.leader_odom
+        return self.leader_odom, self.count
 
     def get_camera_depth_image_raw(self):
         return self.camera_depth_image_raw

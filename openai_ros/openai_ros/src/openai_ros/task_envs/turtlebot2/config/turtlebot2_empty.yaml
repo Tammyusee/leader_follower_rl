@@ -33,7 +33,7 @@ turtlebot2: #namespace
 
     desired_distance: # distance the follower has to remain
       x: 1.0
-      y: 0.2
+      y: 0.5
       z: 0.0
 
     forwards_reward: 5 #5 # Points Given to go forwards
