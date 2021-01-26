@@ -162,17 +162,17 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
 
         if self.combined_action_list[action][0] == 1:
             # left
-            print("turning left")
+            # print("turning left")
             linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
             angular_speed = -1 * self.angular_speed / (self.combined_action_list[action][2] + 1)
         elif self.combined_action_list[action][0] == 2:
             # right
-            print("turning right")
+            # print("turning right")
             linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
             angular_speed = self.angular_speed / (self.combined_action_list[action][2] + 1)
         else:
             # forward
-            print("going forward")
+            # print("going forward")
             linear_speed = self.linear_forward_speed / (self.combined_action_list[action][1] + 1)
             angular_speed = 0
         # else:
@@ -188,8 +188,8 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         # print("------------------")
         # print(self.combined_action_list[action])
         # print("action", action)
-        print("lin_speed = ", linear_speed)
-        print("ang_speed = ", angular_speed)
+        # print("lin_speed = ", linear_speed)
+        # print("ang_speed = ", angular_speed)
         # print("------------------")
 
         # We tell TurtleBot2 the linear and angular speed to set to execute
@@ -246,7 +246,7 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
 
             if abs(self.leader_odom.pose.pose.position.x) >= self.leader_goal_x:
                 print("LEADER HAS REACHED THE GOAL, WILL WAIT A BIT FOR THE FOLLOWER")
-                if count >= 100:
+                if count >= 60:
                     print("THE LEADER IS DONE WAITING!!")
                     if self.is_in_desired_position(current_position):  # distance_diff <= self.desired_distancde.x + self.MAX_DEV:
                         print("A follower is IN the desired distance but a bit delayed    *1*")
@@ -294,34 +294,6 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
             #     rospy.logerr("TurtleBot to Far in X Pos ==>"+str(current_position.x))
             #     self._episode_done = True
 
-<<<<<<< HEAD
-            MAX_DEV = self.desired_distancde.x
-            # MAX_DEV = 0.2
-            # MIN_DEV = -0.2
-
-            self.leader_odom = self.get_leader_odom()
-
-            distance_diff_x = abs(abs(self.leader_odom.pose.pose.position.x) - abs(current_position.x))
-            distance_diff_y = abs(abs(self.leader_odom.pose.pose.position.y) - abs(current_position.y))
-
-            # if distance_diff_x <= self.desired_distancde.x + MAX_DEV and distance_diff_x >= self.desired_distancde.x + MIN_DEV:
-            #     if distance_diff_y <= self.desired_distancde.y + MAX_DEV and distance_diff_y >= self.desired_distancde.y + MIN_DEV:
-
-            if distance_diff_x <= self.desired_distancde.x + MAX_DEV:
-                if distance_diff_y <= self.desired_distancde.y + MAX_DEV:
-                    # print("Follower is in a desired range...")
-                    if abs(self.leader_odom.pose.pose.position.x >= 2.90):
-                        self._episode_done = True
-                        print("***** The leader has reached a goal!! *****")
-                else:
-                    rospy.logerr("TurtleBot to Far in Y Pos")
-                    self._episode_done = True
-            else:
-                rospy.logerr("TurtleBot to Far in X Pos")
-                self._episode_done = True
-
-=======
->>>>>>> ed889b8ebd95a49de9ac29e19e7381b819b6c459
         return self._episode_done
 
         ##################### this part might has to be changed ############################
@@ -418,7 +390,7 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
 
         if distance_diff <= self.desired_distancde.x + self.MAX_DEV:
             if abs(self.leader_odom.pose.pose.position.x >= self.leader_goal_x):
-                print("is_in_desired_pose = True **********************")
+                # print("is_in_desired_pose = True **********************")
                 is_in_desired_pos = True
 
         # x_pos_plus = self.desired_point.x + epsilon
@@ -433,24 +405,6 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         # y_pos_are_close = (y_current <= y_pos_plus) and (y_current > y_pos_minus)
         #
         # is_in_desired_pos = x_pos_are_close and y_pos_are_close
-
-<<<<<<< HEAD
-        MAX_DEV = 0.2
-        MIN_DEV = -0.2
-
-        self.leader_odom = self.get_leader_odom()
-
-        distance_diff_x = abs(abs(self.leader_odom.pose.pose.position.x) - abs(current_position.x))
-        distance_diff_y = abs(abs(self.leader_odom.pose.pose.position.y) - abs(current_position.y))
-
-        if distance_diff_x <= self.desired_distancde.x + MAX_DEV and distance_diff_x >= self.desired_distancde.x + MIN_DEV:
-            if distance_diff_y <= self.desired_distancde.y + MAX_DEV and distance_diff_y >= self.desired_distancde.y + MIN_DEV:
-                if abs(self.leader_odom.pose.pose.position.x >= 2.90):
-                    is_in_desired_pos = True
-=======
-        # MAX_DEV = 0.2
-        # MIN_DEV = -0.2
->>>>>>> ed889b8ebd95a49de9ac29e19e7381b819b6c459
 
         return is_in_desired_pos
     #######################################################################################################

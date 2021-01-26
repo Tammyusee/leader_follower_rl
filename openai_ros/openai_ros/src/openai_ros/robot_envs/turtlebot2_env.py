@@ -269,18 +269,13 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         :return:
         """
 
-<<<<<<< HEAD
+
         leader_cmd_vel_value = Twist()
 
-        if self.leader_odom.pose.pose.position.x >= 2.9:
-            leader_cmd_vel_value.linear.x = 0.0
-            leader_cmd_vel_value.angular.z = 0.0
-=======
         if self.leader_odom.pose.pose.position.x >= self.leader_goal_x:
             self.leader_cmd_vel_value.linear.x = 0.0
             self.leader_cmd_vel_value.angular.z = 0.0
             self.count += 1
->>>>>>> ed889b8ebd95a49de9ac29e19e7381b819b6c459
         else:
             self.leader_cmd_vel_value.linear.x = 0.15
             self.leader_cmd_vel_value.angular.z = 0.0
