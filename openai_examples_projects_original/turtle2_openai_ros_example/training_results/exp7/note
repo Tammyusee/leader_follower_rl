@@ -1,0 +1,73 @@
+NOTE
+
+- experiment: 7
+
+- number of steps: 10,000
+
+- number of episodes: 2,000
+
+- remark: modify the _episode_done criteria in _is_done()
+
+- parameters:
+turtlebot2: #namespace
+    #######################################
+    n_movements: 5  # forward, left, right, backward, stop **do not change
+    n_linear_velocity: 5  # (linear_forward_speed/n_linear_velocity)
+    n_angular_velocity: 5
+    #######################################
+
+    n_actions: 3 # We have 3 actions, Forwards,TurnLeft,TurnRight,Backwards
+    n_observations: 6 # We have 6 different observations
+
+    speed_step: 1.0 # Time to wait in the reset phases
+
+    #######################################
+    leader_linear_forward_speed: 0.15
+    leader_linear_turn_speed: 0.0
+    #######################################
+
+    linear_forward_speed: 0.3 #0.5 # Speed for going fowards
+    linear_turn_speed: 0.2 #0.05 # Linear speed when turning
+    angular_speed: 0.1 #0.3 # Angular speed when turning Left or Right
+    init_linear_forward_speed: 0.0 # Initial linear speed in which we start each episode
+    init_linear_turn_speed: 0.0 # Initial angular speed in shich we start each episode
+    
+    new_ranges: 5 # How many laser readings we jump in each observation reading, the bigger the less laser resolution
+    min_range: 0.5 # Minimum meters below wich we consider we have crashed
+    max_laser_value: 6 # Value considered Ok, no wall
+    min_laser_value: 0 # Value considered there is an obstacle or crashed
+    
+    desired_pose: # leader's goal pose
+      x: 5.0
+      y: 0.0
+      z: 0.0
+
+    desired_distance: # distance the follower has to remain
+      x: 1.5
+      y: 0.2
+      z: 0.0
+
+    forwards_reward: 5 #5 # Points Given to go forwards
+    turn_reward: 1 # Points Given to turn as action
+    end_episode_points: 100 # Points given when ending an episode
+
+    distance_reward: 5
+    velocity_reward: 1
+    orientation_reward: 1
+
+
+
+turtlebot2: #namespace
+    task_and_robot_environment_name: 'MyTurtleBot2Empty-v0'  # MyTurtleBot2Wall-v0
+    ros_ws_abspath: "/home/isl2-tammy/leader_follower_ws"
+#    running_step: 0.04 # amount of time the control will be executed
+    pos_step: 0.016     # increment in position for each command
+    
+    #qlearn parameters
+    alpha: 0.1
+    gamma: 0.7
+    epsilon: 1.0 # 0.9
+    epsilon_discount: 0.999
+    nepisodes: 2000
+    nsteps: 10000
+    running_step: 0.04 #0.06 # Time for each step
