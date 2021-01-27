@@ -1,6 +1,6 @@
 turtlebot2: #namespace
     #######################################
-    n_movements: 3  # forward, left, right, backward, stop **do not change
+    n_movements: 5  # forward, left, right, backward, stop **do not change
     n_linear_velocity: 5  # (linear_forward_speed/n_linear_velocity)
     n_angular_velocity: 3
     #######################################
@@ -33,7 +33,7 @@ turtlebot2: #namespace
 
     desired_distance: # distance the follower has to remain
       x: 1.0
-      y: 0.5
+      y: 0.0
       z: 0.0
 
     forwards_reward: 5 #5 # Points Given to go forwards

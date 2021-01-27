@@ -161,20 +161,25 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
 
         if self.combined_action_list[action][0] == 1:
-            # left
-            # print("turning left")
+            print("turning left")
             linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
             angular_speed = -1 * self.angular_speed / (self.combined_action_list[action][2] + 1)
         elif self.combined_action_list[action][0] == 2:
-            # right
-            # print("turning right")
+            print("turning right")
             linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
             angular_speed = self.angular_speed / (self.combined_action_list[action][2] + 1)
-        else:
-            # forward
-            # print("going forward")
-            linear_speed = self.linear_forward_speed / (self.combined_action_list[action][1] + 1)
+        elif self.combined_action_list[action][0] == 3:
+            print("going backward")
+            linear_speed = -1 * self.linear_forward_speed / (self.combined_action_list[action][1] + 1)
             angular_speed = 0
+        elif self.combined_action_list[action][0] == 4:
+            print("stop")
+            linear_speed = 0.0
+            angular_speed = 0.0
+        else:
+            print("going forward")
+            linear_speed = self.linear_forward_speed / (self.combined_action_list[action][1] + 1)
+            angular_speed = 0.0
         # else:
         #     # stop
         #     print("stopping")
@@ -241,21 +246,22 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
 
             self.leader_odom, count = self.get_leader_odom()
 
-            desired_x = self.leader_odom.pose.pose.position.x - self.desired_distancde.x
-            desired_y = 0
+            desired_pose_x = self.leader_odom.pose.pose.position.x - self.desired_distancde.x
+            desired_pose_y = self.desired_distancde.y
 
             if abs(self.leader_odom.pose.pose.position.x) >= self.leader_goal_x:
                 print("LEADER HAS REACHED THE GOAL, WILL WAIT A BIT FOR THE FOLLOWER")
-                if count >= 60:
+                if count >= 100:
                     print("THE LEADER IS DONE WAITING!!")
                     if self.is_in_desired_position(current_position):  # distance_diff <= self.desired_distancde.x + self.MAX_DEV:
-                        print("A follower is IN the desired distance but a bit delayed    *1*")
+                        print("A follower is IN the desired distance after a bit delayed    *1*")
                     else:
                         print("A follower is TOO FAR from the desired distance")
                     self._episode_done = True
                 elif self.is_in_desired_position(current_position):
                     print("A follower is IN the desired distance    *2*")
                     self._episode_done = True
+
                 # elif abs(current_position.x - desired_x) >= self.desired_distancde.x and count >= 50:
                 #     print("A follower is WAYYY TOO FAR from X desired pose     *OUTSIDE*")
                 #
@@ -311,28 +317,53 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         distance_from_des_point = self.get_distance_from_desired_point(current_position)
         distance_difference = distance_from_des_point - self.previous_distance_from_des_point
 
-        reward = 0
-        if not done:
-            xfyf = numpy.array((current_position.x, current_position.y))
-            xlyl = numpy.array((self.leader_odom.pose.pose.position.x, self.leader_odom.pose.pose.position.y))
+        self.leader_odom, count = self.get_leader_odom()
 
-            distance_diff = numpy.linalg.norm(xfyf - xlyl)
-            distance_discount = abs(distance_diff - self.desired_distancde.x)
-            reward_discount = (distance_discount * self.distance_reward) / self.desired_distancde.x
-            reward = self.distance_reward - reward_discount
+        reward = 0
+
+        # if not done:
+        #     xfyf = numpy.array((current_position.x, current_position.y))
+        #     xlyl = numpy.array((self.leader_odom.pose.pose.position.x, self.leader_odom.pose.pose.position.y))
+        #
+        #     distance_diff = numpy.linalg.norm(xfyf - xlyl)
+        #     distance_discount = abs(distance_diff - self.desired_distancde.x)
+        #     reward_discount = (distance_discount * self.distance_reward) / self.desired_distancde.x
+        #     reward = self.distance_reward - reward_discount
+
+        desired_pose_x = self.leader_odom.pose.pose.position.x - self.desired_distancde.x
+        desired_pose_y = self.desired_distancde.y
+
+        print("desired_pose_x = ", desired_pose_x)
+
+        follower_pose_x = current_position.x
+        follower_pose_y = current_position.y
+
+        if not done:
+            fxfy = numpy.array((follower_pose_x, follower_pose_y))
+            dxdy = numpy.array((desired_pose_x, desired_pose_y))
+
+            follower_pose_diff = numpy.linalg.norm(fxfy - dxdy)
+            reward_discount = (follower_pose_diff * self.distance_reward) / self.desired_distancde.x
+            reward = self.distance_reward - (reward_discount * reward_discount)
+
+            print("-----------------------------------------------")
+            print("follower_pose_diff = ", follower_pose_diff)
+            print("reward_discount = ", reward_discount)
+            print("reward = ", reward)
+            print("-----------------------------------------------")
         else:
-            if self.is_in_desired_position(current_position):  # might need to define new end_episode condition!!
+            if self.is_in_desired_position(current_position):
                 reward = self.end_episode_points
             else:
                 reward = -1 * self.end_episode_points
 
-            # print("-----------------------------------------------")
-            # print("distance difference = ", distance_diff)
-            # print("distance discount = ", distance_discount)
-            # print("reward discount % = ", (distance_discount * 100) / self.desired_distancde.x)
-            # print("reward_discount = ", reward_discount)
-            # print("reward = ", reward)
-            # print("-----------------------------------------------")
+        # print("-----------------------------------------------")
+        # print("distance difference = ", distance_diff)
+        # print("distance discount = ", distance_discount)
+        # print("reward discount % = ", (distance_discount * 100) / self.desired_distancde.x)
+        # print("reward_discount = ", reward_discount)
+        # print("reward = ", reward)
+        # print("-----------------------------------------------")
 
         self.previous_distance_from_des_point = distance_from_des_point
 
@@ -382,16 +413,26 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         """
         is_in_desired_pos = False
 
-        self.leader_odom, count_x = self.get_leader_odom()
+        if abs(self.leader_odom.pose.pose.position.x >= self.leader_goal_x):
 
-        xfyf = numpy.array((current_position.x, current_position.y))
-        xlyl = numpy.array((self.leader_odom.pose.pose.position.x, self.leader_odom.pose.pose.position.y))
-        distance_diff = numpy.linalg.norm(xfyf - xlyl)
+            self.leader_odom, count_x = self.get_leader_odom()
 
-        if distance_diff <= self.desired_distancde.x + self.MAX_DEV:
-            if abs(self.leader_odom.pose.pose.position.x >= self.leader_goal_x):
-                # print("is_in_desired_pose = True **********************")
+            desired_pose_x = self.leader_odom.pose.pose.position.x - self.desired_distancde.x
+            desired_pose_y = self.desired_distancde.y
+
+            xfyf = numpy.array((current_position.x, current_position.y))
+            xdyd = numpy.array((desired_pose_x, desired_pose_y))
+            pose_diff = numpy.linalg.norm(xfyf - xdyd)
+
+            if pose_diff <= self.MAX_DEV:
                 is_in_desired_pos = True
+
+            # print("pose_diff = ", pose_diff)
+
+            # xlyl = numpy.array((self.leader_odom.pose.pose.position.x, self.leader_odom.pose.pose.position.y))
+            # distance_diff = numpy.linalg.norm(xfyf - xlyl)
+            # if distance_diff <= self.desired_distancde.x + self.MAX_DEV:
+            #     is_in_desired_pos = True
 
         # x_pos_plus = self.desired_point.x + epsilon
         # x_pos_minus = self.desired_point.x - epsilon
