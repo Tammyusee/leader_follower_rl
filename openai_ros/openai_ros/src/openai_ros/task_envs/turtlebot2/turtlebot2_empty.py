@@ -9,7 +9,7 @@ from openai_ros.openai_ros_common import ROSLauncher
 import os
 
 from nav_msgs.msg import Odometry
-import random
+
 
 class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
     def __init__(self):
@@ -56,8 +56,8 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         ###################################################
 
         number_actions = rospy.get_param('/turtlebot2/n_actions')
-        # self.action_space = spaces.Discrete(number_actions)  # the action space will be used by qlearn.py
-        self.action_space = spaces.Discrete(number_actions_new)  # the action space will be used by qlearn.py
+        self.action_space = spaces.Discrete(number_actions)  # the action space will be used by qlearn.py
+        # self.action_space = spaces.Discrete(number_actions_new)  # the action space will be used by qlearn.py
 
         # We set the reward range, which is not compulsory but here we do it.
         self.reward_range = (-numpy.inf, numpy.inf)
@@ -128,6 +128,8 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         self.leader_odom = Odometry()
         self.MAX_DEV = 0.2
 
+        self.last_action = 3
+
     def _set_init_pose(self):
         """Sets the Robot in its init pose
         """
@@ -160,42 +162,42 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         rospy.logdebug("Start Set Action ==>"+str(action))
         # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
 
-        if self.combined_action_list[action][0] == 1:
-            print("turning left")
-            linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
-            angular_speed = -1 * self.angular_speed / (self.combined_action_list[action][2] + 1)
-        elif self.combined_action_list[action][0] == 2:
-            print("turning right")
-            linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
-            angular_speed = self.angular_speed / (self.combined_action_list[action][2] + 1)
-        elif self.combined_action_list[action][0] == 3:
-            print("going backward")
-            linear_speed = -1 * self.linear_forward_speed / (self.combined_action_list[action][1] + 1)
-            angular_speed = 0
-        elif self.combined_action_list[action][0] == 4:
-            print("stop")
-            linear_speed = 0.0
-            angular_speed = 0.0
-        else:
+        if action == 0:  # forward
             print("going forward")
-            linear_speed = self.linear_forward_speed / (self.combined_action_list[action][1] + 1)
+            linear_speed = 0.05
             angular_speed = 0.0
-        # else:
-        #     # stop
-        #     print("stopping")
-        #     linear_speed = 0
+            self.last_action = 0
+        elif action == 1:  # left
+            print("turning left")
+            linear_speed = 0.1
+            angular_speed = 0.5
+            self.last_action = 1
+        else:  # right
+            print("turning right")
+            linear_speed = 0.1
+            angular_speed = -0.5
+            self.last_action = 2
+
+        # if self.combined_action_list[action][0] == 1:
+        #     print("turning left")
+        #     linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
+        #     angular_speed = -1 * self.angular_speed / (self.combined_action_list[action][2] + 1)
+        # elif self.combined_action_list[action][0] == 2:
+        #     print("turning right")
+        #     linear_speed = self.linear_turn_speed / (self.combined_action_list[action][2] + 1)
+        #     angular_speed = self.angular_speed / (self.combined_action_list[action][2] + 1)
+        # elif self.combined_action_list[action][0] == 3:
+        #     print("going backward")
+        #     linear_speed = -1 * self.linear_forward_speed / (self.combined_action_list[action][1] + 1)
         #     angular_speed = 0
-
-        # linear_forward_speed: 0.3
-        # linear_turn_speed: 0.2
-        # angular_speed: 0.1
-
-        # print("------------------")
-        # print(self.combined_action_list[action])
-        # print("action", action)
-        # print("lin_speed = ", linear_speed)
-        # print("ang_speed = ", angular_speed)
-        # print("------------------")
+        # elif self.combined_action_list[action][0] == 4:
+        #     print("stop")
+        #     linear_speed = 0.0
+        #     angular_speed = 0.0
+        # else:
+        #     print("going forward")
+        #     linear_speed = self.linear_forward_speed / (self.combined_action_list[action][1] + 1)
+        #     angular_speed = 0.0
 
         # We tell TurtleBot2 the linear and angular speed to set to execute
         self.move_base(linear_speed, angular_speed, epsilon=0.05, update_rate=10)
@@ -262,110 +264,61 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
                     print("A follower is IN the desired distance    *2*")
                     self._episode_done = True
 
-                # elif abs(current_position.x - desired_x) >= self.desired_distancde.x and count >= 50:
-                #     print("A follower is WAYYY TOO FAR from X desired pose     *OUTSIDE*")
-                #
-                #     print("desired_x = ", desired_x)
-                #     print("current_position.x = ", current_position.x)
-                #     print("abs(current_position.x - desired_x) = ", abs(current_position.x - desired_x))
-                #     print("self.desired_distancde.x / 2 = ", self.desired_distancde.x)
-                #
-                #     self._episode_done = True
-                # elif abs(current_position.y - desired_y) >= self.desired_distancde.y and count >= 50:
-                #     print("A follower is WAYYY TOO FAR from Y desired pose     *OUTSIDE*")
-                #
-                #     print("desired_y = ", desired_y)
-                #     print("current_position.y = ", current_position.y)
-                #     print("abs(current_position.y - desired_y) = ", abs(current_position.y - desired_y))
-                #     print("self.desired_distancde.y = ", self.desired_distancde.y)
-                #
-                #     self._episode_done = True
-
-            # MAX_X = 6.0
-            # MIN_X = -1.0
-            # MAX_Y = 3.0
-            # MIN_Y = -3.0
-
-            # # We see if we are outside the Learning Space
-            # if current_position.x <= MAX_X and current_position.x > MIN_X:  # change new min and max x
-            #     if current_position.y <= MAX_Y and current_position.y > MIN_Y:  # change new min and max y
-            #         rospy.logdebug("TurtleBot Position is OK ==>["+str(current_position.x)+","+str(current_position.y)+"]")
-            #         # We see if it got to the desired point
-            #         if self.is_in_desired_position(current_position):
-            #             self._episode_done = True
-            #     else:
-            #         rospy.logerr("TurtleBot to Far in Y Pos ==>"+str(current_position.x))
-            #         self._episode_done = True
-            # else:
-            #     rospy.logerr("TurtleBot to Far in X Pos ==>"+str(current_position.x))
-            #     self._episode_done = True
-
         return self._episode_done
-
-        ##################### this part might has to be changed ############################
-        # TO ADD #
-        # distance reward
-        # orientation reward
-        # velocity reward
 
     def _compute_reward(self, observations, done):
         current_position = Point()
         current_position.x = observations[-2]
         current_position.y = observations[-1]
         current_position.z = 0.0
-
-        distance_from_des_point = self.get_distance_from_desired_point(current_position)
-        distance_difference = distance_from_des_point - self.previous_distance_from_des_point
-
-        self.leader_odom, count = self.get_leader_odom()
-
-        reward = 0
-
-        # if not done:
-        #     xfyf = numpy.array((current_position.x, current_position.y))
-        #     xlyl = numpy.array((self.leader_odom.pose.pose.position.x, self.leader_odom.pose.pose.position.y))
         #
-        #     distance_diff = numpy.linalg.norm(xfyf - xlyl)
-        #     distance_discount = abs(distance_diff - self.desired_distancde.x)
-        #     reward_discount = (distance_discount * self.distance_reward) / self.desired_distancde.x
-        #     reward = self.distance_reward - reward_discount
-
-        desired_pose_x = self.leader_odom.pose.pose.position.x - self.desired_distancde.x
-        desired_pose_y = self.desired_distancde.y
-
-        print("desired_pose_x = ", desired_pose_x)
-
-        follower_pose_x = current_position.x
-        follower_pose_y = current_position.y
+        # distance_from_des_point = self.get_distance_from_desired_point(current_position)
+        # distance_difference = distance_from_des_point - self.previous_distance_from_des_point
+        #
+        # self.leader_odom, count = self.get_leader_odom()
+        #
+        # reward = 0
+        #
+        # desired_pose_x = self.leader_odom.pose.pose.position.x - self.desired_distancde.x
+        # desired_pose_y = self.desired_distancde.y
+        #
+        # print("desired_pose_x = ", desired_pose_x)
+        #
+        # follower_pose_x = current_position.x
+        # follower_pose_y = current_position.y
+        #
+        # if not done:
+        #     fxfy = numpy.array((follower_pose_x, follower_pose_y))
+        #     dxdy = numpy.array((desired_pose_x, desired_pose_y))
+        #
+        #     follower_pose_diff = numpy.linalg.norm(fxfy - dxdy)
+        #     reward_discount = (follower_pose_diff * self.distance_reward) / self.desired_distancde.x
+        #     reward = self.distance_reward - (reward_discount * reward_discount)
+        #
+        #     print("-----------------------------------------------")
+        #     print("follower_pose_diff = ", follower_pose_diff)
+        #     print("reward_discount = ", reward_discount)
+        #     print("reward = ", reward)
+        #     print("-----------------------------------------------")
 
         if not done:
-            fxfy = numpy.array((follower_pose_x, follower_pose_y))
-            dxdy = numpy.array((desired_pose_x, desired_pose_y))
-
-            follower_pose_diff = numpy.linalg.norm(fxfy - dxdy)
-            reward_discount = (follower_pose_diff * self.distance_reward) / self.desired_distancde.x
-            reward = self.distance_reward - (reward_discount * reward_discount)
-
-            print("-----------------------------------------------")
-            print("follower_pose_diff = ", follower_pose_diff)
-            print("reward_discount = ", reward_discount)
-            print("reward = ", reward)
-            print("-----------------------------------------------")
+            if self.last_action == 0:  # forward
+                reward = 1
+            elif self.last_action == 1:  # left
+                reward = 0
+            elif self.last_action == 2:  # right
+                reward = 0
         else:
             if self.is_in_desired_position(current_position):
                 reward = self.end_episode_points
             else:
                 reward = -1 * self.end_episode_points
 
-        # print("-----------------------------------------------")
-        # print("distance difference = ", distance_diff)
-        # print("distance discount = ", distance_discount)
-        # print("reward discount % = ", (distance_discount * 100) / self.desired_distancde.x)
-        # print("reward_discount = ", reward_discount)
-        # print("reward = ", reward)
-        # print("-----------------------------------------------")
+        print("-----------------------------------------------")
+        print("reward = ", reward)
+        print("-----------------------------------------------")
 
-        self.previous_distance_from_des_point = distance_from_des_point
+        # self.previous_distance_from_des_point = distance_from_des_point
 
         rospy.logdebug("reward=" + str(reward))
         self.cumulated_reward += reward

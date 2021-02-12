@@ -5,7 +5,7 @@ turtlebot2: #namespace
     n_angular_velocity: 3
     #######################################
 
-    n_actions: 3 # We have 3 actions, Forwards,TurnLeft,TurnRight,Backwards
+    n_actions: 3 # We have 3 actions, Forwards,TurnLeft,TurnRight
     n_observations: 6 # We have 6 different observations
 
     speed_step: 1.0 # Time to wait in the reset phases

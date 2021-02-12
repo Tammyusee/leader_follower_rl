@@ -38,10 +38,6 @@ class QLearn:
             self.q[(state, action)] = oldv + self.alpha * (value - oldv)  # q-learning equation
             # print("UPDATING q-table")
 
-        # print("q = ", self.q)
-        # print(self.q[(state, action)])
-        # print("-------------------------------------------------")
-
     def chooseAction(self, state, return_q=False):
         # print("state = ", state)
         q = [self.getQ(state, a) for a in self.actions]  # get q-value of each action given a current state

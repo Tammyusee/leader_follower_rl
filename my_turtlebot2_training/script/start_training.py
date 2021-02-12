@@ -109,7 +109,7 @@ if __name__ == '__main__':
             # rospy.logwarn("############### END Step=>" + str(i))
 
             # raw_input("Next Step...PRESS KEY")
-            # rospy.sleep(2.0)
+            rospy.sleep(running_step)
 
         m, s = divmod(int(time.time() - start_time), 60)
         h, m = divmod(m, 60)
