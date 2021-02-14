@@ -164,7 +164,7 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
 
         if action == 0:  # forward
             print("going forward")
-            linear_speed = 0.05
+            linear_speed = 0.05  # change from 0.05 to 0.15 in exp4!
             angular_speed = 0.0
             self.last_action = 0
         elif action == 1:  # left
@@ -227,7 +227,18 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
 
         # We only want the X and Y position and the Yaw
 
+        # what if we change the odometry_array to distance difference between the leader and follower?
+        leader_odometry, _ = self.get_leader_odom()
+        leader_x_position = leader_odometry.pose.pose.position.x
+        leader_y_position = leader_odometry.pose.pose.position.y
+        diff_x = abs(leader_x_position - x_position)
+        diff_y = abs(leader_y_position - y_position)
+        odometry_array = [round(diff_x, 2), round(diff_y, 2)]
+        print("odometry_array ", odometry_array)
+        ##############################################################################################
+
         observations = discretized_laser_scan + odometry_array
+        # observations = round(diff_x, 2)  # do this in exp4
 
         rospy.logdebug("Observations==>"+str(observations))
         rospy.logdebug("END Get Observation ==>")
@@ -251,18 +262,28 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
             desired_pose_x = self.leader_odom.pose.pose.position.x - self.desired_distancde.x
             desired_pose_y = self.desired_distancde.y
 
+            # the leader waits
+            # if abs(self.leader_odom.pose.pose.position.x) >= self.leader_goal_x:
+            #     print("LEADER HAS REACHED THE GOAL, WILL WAIT A BIT FOR THE FOLLOWER")
+            #     if count >= 100:
+            #         print("THE LEADER IS DONE WAITING!!")
+            #         if self.is_in_desired_position(current_position):  # distance_diff <= self.desired_distancde.x + self.MAX_DEV:
+            #             print("A follower is IN the desired distance after a bit delayed    *1*")
+            #         else:
+            #             print("A follower is TOO FAR from the desired distance")
+            #         self._episode_done = True
+            #     elif self.is_in_desired_position(current_position):
+            #         print("A follower is IN the desired distance    *2*")
+            #         self._episode_done = True
+
+            # the leader does not wait
             if abs(self.leader_odom.pose.pose.position.x) >= self.leader_goal_x:
-                print("LEADER HAS REACHED THE GOAL, WILL WAIT A BIT FOR THE FOLLOWER")
-                if count >= 100:
-                    print("THE LEADER IS DONE WAITING!!")
-                    if self.is_in_desired_position(current_position):  # distance_diff <= self.desired_distancde.x + self.MAX_DEV:
-                        print("A follower is IN the desired distance after a bit delayed    *1*")
-                    else:
-                        print("A follower is TOO FAR from the desired distance")
-                    self._episode_done = True
-                elif self.is_in_desired_position(current_position):
-                    print("A follower is IN the desired distance    *2*")
-                    self._episode_done = True
+                print("LEADER HAS REACHED THE GOAL!")
+                if self.is_in_desired_position(current_position):  # distance_diff <= self.desired_distancde.x + self.MAX_DEV:
+                    print("A follower is IN the desired distance")
+                else:
+                    print("A follower is TOO FAR from the desired distance")
+                self._episode_done = True
 
         return self._episode_done
 
@@ -314,9 +335,9 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
             else:
                 reward = -1 * self.end_episode_points
 
-        print("-----------------------------------------------")
-        print("reward = ", reward)
-        print("-----------------------------------------------")
+        # print("-----------------------------------------------")
+        # print("reward = ", reward)
+        # print("-----------------------------------------------")
 
         # self.previous_distance_from_des_point = distance_from_des_point
 

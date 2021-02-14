@@ -28,7 +28,7 @@ class QLearn:
         Q-learning:
             Q(s, a) += alpha * (reward(s,a) + max(Q(s') - Q(s,a))
             NO IT HAS TO BE >>
-            Q(s, a) += alpha * (reward(s,a) + gamma*max(Q(s',a') - Q(s,a))
+            Q(s, a) += alpha * (reward(s,a) + gamma*max(Q(s') - Q(s,a))
         '''
         oldv = self.q.get((state, action), None)  # old value
         if oldv is None:
@@ -37,6 +37,8 @@ class QLearn:
         else:
             self.q[(state, action)] = oldv + self.alpha * (value - oldv)  # q-learning equation
             # print("UPDATING q-table")
+        # print("q = ", self.q[(state, action)])
+        # print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
     def chooseAction(self, state, return_q=False):
         # print("state = ", state)
@@ -61,7 +63,8 @@ class QLearn:
         count = q.count(maxQ)
         # In case there're several state-action max values 
         # we select a random one among them
-        if count > 1:
+        # if count > 1:
+        if count >= 1:
             best = [i for i in range(len(self.actions)) if q[i] == maxQ]
             i = random.choice(best)
         else:
@@ -83,3 +86,4 @@ class QLearn:
         # print("UPDATING q-table")
         maxqnew = max([self.getQ(state2, a) for a in self.actions])  # max q value of newState-action pair (q*(s',a))
         self.learnQ(state1, action1, reward, reward + self.gamma*maxqnew)
+

@@ -50,6 +50,7 @@ catkin_python_setup()
 add_message_files(
    FILES
    RLExperimentInfo.msg
+   TrainingInfo.msg
  )
 
 ## Generate services in the 'srv' folder

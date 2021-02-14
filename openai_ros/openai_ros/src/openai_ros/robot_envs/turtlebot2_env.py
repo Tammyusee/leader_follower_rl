@@ -88,7 +88,7 @@ class TurtleBot2Env(robot_gazebo_env.RobotGazeboEnv):
         self._leader_cmd_vel_pub = rospy.Publisher('/leader/cmd_vel', Twist, queue_size=1)
 
         self.leader_cmd_vel_value = Twist()
-        self.leader_goal_x = 4.00
+        self.leader_goal_x = 3.00
         self.count = 0
 
         self._check_publishers_connection()

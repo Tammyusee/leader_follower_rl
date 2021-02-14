@@ -12,6 +12,9 @@ import rospy
 import rospkg
 from openai_ros.openai_ros_common import StartOpenAI_ROS_Environment
 
+from openai_ros.msg import TrainingInfo
+import subprocess
+
 
 if __name__ == '__main__':
     rospy.init_node('example_turtlebot2_maze_qlearn', anonymous=True, log_level=rospy.WARN)
@@ -53,79 +56,105 @@ if __name__ == '__main__':
     start_time = time.time()
     highest_reward = 0
 
+    training_info_pub = rospy.Publisher('/training_info', TrainingInfo, queue_size=1)
+
     # Starts the main training loop: the one about the episodes to do
     for x in range(nepisodes):
-        # print(".....................................................")
-        # print("EPISODE: ", x)
-        # print(".....................................................")
 
-        rospy.logdebug("############### EMPTY START EPISODE=>" + str(x))
+        if not rospy.is_shutdown():
+            rospy.logdebug("############### EMPTY START EPISODE=>" + str(x))
 
-        cumulated_reward = 0
-        done = False
-        if qlearn.epsilon > 0.05:  # 0.05
-            qlearn.epsilon *= epsilon_discount
+            cumulated_reward = 0
+            done = False
+            if qlearn.epsilon > 0.05:  # 0.05
+                qlearn.epsilon *= epsilon_discount
 
-        # Initialize the environment and get first state of the robot
-        observation = env.reset()
-        state = ''.join(map(str, observation))
+            # Initialize the environment and get first state of the robot
+            observation = env.reset()
+            state = ''.join(map(str, observation))
 
-        # Show on screen the actual situation of the robot
-        # env.render()
-        # for each episode, we test the robot for nsteps
-        for i in range(nsteps):
-            rospy.logwarn("# Start Step=>" + str(i))
-            # Pick an action based on the current state
-            action = qlearn.chooseAction(state)
-            # rospy.logwarn("Next action is:", action)
-            # Execute the action in the environment and get feedback
-            observation, reward, done, info = env.step(action)  # the function step() will call _set_action()
+            # Show on screen the actual situation of the robot
+            # env.render()
+            # for each episode, we test the robot for nsteps
+            for i in range(nsteps):
+                if not rospy.is_shutdown():
+                    rospy.logwarn("# Start Step=>" + str(i))
+                    # Pick an action based on the current state
+                    action, q_value = qlearn.chooseAction(state, return_q=True)
 
-            # choose_action -> set_action -> learn_q
+                    # rospy.logwarn("Next action is:", action)
+                    # Execute the action in the environment and get feedback
+                    observation, reward, done, info = env.step(action)  # the function step() will call _set_action()
+                    # choose_action -> set_action -> learn_q
+                    print("THE CHOSEN ACTION: ", action, ", GIVEN REWARD: ", reward, "CALCULATED Q-VALUE: ", q_value)
 
-            # rospy.logwarn(str(observation) + " " + str(reward))
-            cumulated_reward += reward
-            if highest_reward < cumulated_reward:
-                highest_reward = cumulated_reward
+                    training_info = TrainingInfo()
+                    training_info.episode = x
+                    training_info.step = i
+                    training_info.observation = observation
+                    training_info.action = action
+                    training_info.reward = reward
+                    training_info.q_value = qlearn.getQ(state, action)
+                    training_info_pub.publish(training_info)
 
-            nextState = ''.join(map(str, observation))
+                    # rospy.logwarn(str(observation) + " " + str(reward))
+                    cumulated_reward += reward
+                    if highest_reward < cumulated_reward:
+                        highest_reward = cumulated_reward
 
-            # Make the algorithm learn based on the results
-            # rospy.logwarn("# state we were=>" + str(state))
-            rospy.logwarn("# action that we took=>" + str(action))
-            rospy.logwarn("# reward that action gave=>" + str(reward))
-            rospy.logwarn("# episode cumulated_reward=>" + str(cumulated_reward))
-            print("\n")
-            # rospy.logwarn("# State in which we will start next step=>" + str(nextState))
-            qlearn.learn(state, action, reward, nextState)
+                    nextState = ''.join(map(str, observation))
 
-            if not done:
-                # rospy.logwarn("NOT DONE")
-                state = nextState
-            else:
-                rospy.logwarn("DONE")
-                last_time_steps = numpy.append(last_time_steps, [int(i + 1)])
-                break
-            # rospy.logwarn("############### END Step=>" + str(i))
+                    # Make the algorithm learn based on the results
+                    # rospy.logwarn("# state we were=>" + str(state))
+                    rospy.logwarn("# action that we took=>" + str(action))
+                    rospy.logwarn("# reward that action gave=>" + str(reward))
+                    rospy.logwarn("# episode cumulated_reward=>" + str(cumulated_reward))
+                    print("\n")
+                    # rospy.logwarn("# State in which we will start next step=>" + str(nextState))
+                    qlearn.learn(state, action, reward, nextState)
 
-            # raw_input("Next Step...PRESS KEY")
-            rospy.sleep(running_step)
+                    if not done:
+                        # rospy.logwarn("NOT DONE")
+                        state = nextState
+                    else:
+                        rospy.logwarn("DONE")
+                        last_time_steps = numpy.append(last_time_steps, [int(i + 1)])
+                        break
+                    # rospy.logwarn("############### END Step=>" + str(i))
 
-        m, s = divmod(int(time.time() - start_time), 60)
-        h, m = divmod(m, 60)
-        rospy.logerr(("EP: " + str(x + 1) + " - [alpha: " + str(round(qlearn.alpha, 2)) + " - gamma: " + str(
-            round(qlearn.gamma, 2)) + " - epsilon: " + str(round(qlearn.epsilon, 2)) + "] - Reward: " + str(
-            cumulated_reward) + "     Time: %d:%02d:%02d" % (h, m, s)))
+                    # raw_input("Next Step...PRESS KEY")
+                    rospy.sleep(running_step)
+                else:
+                    p = subprocess.Popen("killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient", shell=True)
+                    break
 
-    # rospy.logwarn(("\n|" + str(nepisodes) + "|" + str(qlearn.alpha) + "|" + str(qlearn.gamma) + "|" +
-    #                str(initial_epsilon) + "*" + str(epsilon_discount) + "|" + str(highest_reward) + "| PICTURE |\n"))
+            m, s = divmod(int(time.time() - start_time), 60)
+            h, m = divmod(m, 60)
+            rospy.logerr(("EP: " + str(x + 1) + " - [alpha: " + str(round(qlearn.alpha, 2)) + " - gamma: " + str(
+                round(qlearn.gamma, 2)) + " - epsilon: " + str(round(qlearn.epsilon, 2)) + "] - Reward: " + str(
+                cumulated_reward) + "     Time: %d:%02d:%02d" % (h, m, s)))
 
-    l = last_time_steps.tolist()
-    l.sort()
+        else:
+            p = subprocess.Popen("killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient", shell=True)
+            break
+
+        # rospy.logwarn(("\n|" + str(nepisodes) + "|" + str(qlearn.alpha) + "|" + str(qlearn.gamma) + "|" +
+        #                str(initial_epsilon) + "*" + str(epsilon_discount) + "|" + str(highest_reward) + "| PICTURE |\n"))
+
+        l = last_time_steps.tolist()
+        l.sort()
+
+    print("****************** Q TABLE ****************************************************************")
+    print(qlearn.q)
+    print("*******************************************************************************************")
 
     # print("Parameters: a="+str)
     rospy.logwarn("Overall score: {:0.2f}".format(last_time_steps.mean()))
     rospy.logwarn("Best 100 score: {:0.2f}".format(reduce(lambda x, y: x + y, l[-100:]) / len(l[-100:])))
     # print(".....................................................\n")
 
+    p = subprocess.Popen("killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient", shell=True)
+
     env.close()
+
+
