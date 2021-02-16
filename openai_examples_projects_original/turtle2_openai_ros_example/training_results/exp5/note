@@ -1,0 +1,24 @@
+NOTE
+
+- experiment: 5
+
+    alpha: 0.1
+    gamma: 0.7
+    epsilon: 0.9
+    epsilon_discount: 0.999 
+    nepisodes: 1500
+    nsteps: 10000
+
+    new_ranges: 5
+    min_range: 0.5
+    max_laser_value: 6
+    min_laser_value: 0
+    forwards_reward: 1
+    turn_reward: -1
+    end_episode_points: 0
+
+- number of action: 3 (forward, left, right)
+- leader's goal (3.0, 0.0)
+- the leader doesn't wait at the end
+- new observation (x_diff, y_diff)
+
