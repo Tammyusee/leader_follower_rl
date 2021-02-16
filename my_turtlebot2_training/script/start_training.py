@@ -66,8 +66,10 @@ if __name__ == '__main__':
 
             cumulated_reward = 0
             done = False
-            if qlearn.epsilon > 0.05:  # 0.05
+            if qlearn.epsilon > 0.05:
                 qlearn.epsilon *= epsilon_discount
+            else:
+                print("STOPPED DISCOUNTING THE EPSILON")
 
             # Initialize the environment and get first state of the robot
             observation = env.reset()
@@ -86,7 +88,6 @@ if __name__ == '__main__':
                     # Execute the action in the environment and get feedback
                     observation, reward, done, info = env.step(action)  # the function step() will call _set_action()
                     # choose_action -> set_action -> learn_q
-                    print("THE CHOSEN ACTION: ", action, ", GIVEN REWARD: ", reward, "CALCULATED Q-VALUE: ", q_value)
 
                     training_info = TrainingInfo()
                     training_info.episode = x
@@ -106,12 +107,17 @@ if __name__ == '__main__':
 
                     # Make the algorithm learn based on the results
                     # rospy.logwarn("# state we were=>" + str(state))
-                    rospy.logwarn("# action that we took=>" + str(action))
-                    rospy.logwarn("# reward that action gave=>" + str(reward))
+                    # rospy.logwarn("# action that we took=>" + str(action))
+                    # rospy.logwarn("# reward that action gave=>" + str(reward))
                     rospy.logwarn("# episode cumulated_reward=>" + str(cumulated_reward))
-                    print("\n")
+                    # print("\n")
                     # rospy.logwarn("# State in which we will start next step=>" + str(nextState))
                     qlearn.learn(state, action, reward, nextState)
+
+                    print("THE CHOSEN ACTION: " + str(action) + ",\tGIVEN REWARD: " + str(reward) + ",\tCALCULATED Q-VALUE: " + str(qlearn.getQ(state, action)))
+                    print("Epsilon: " + str(qlearn.epsilon) + ",\tState: " + str(state))
+                    print("Q(0): " + str(qlearn.getQ(state, 0)) + ",\tQ(1): " + str(qlearn.getQ(state, 1)) + ",\tQ(2): " + str(qlearn.getQ(state, 2)))
+                    print("---------------------------------------------------------------------------\n")
 
                     if not done:
                         # rospy.logwarn("NOT DONE")
@@ -123,7 +129,7 @@ if __name__ == '__main__':
                     # rospy.logwarn("############### END Step=>" + str(i))
 
                     # raw_input("Next Step...PRESS KEY")
-                    rospy.sleep(running_step)
+                    # rospy.sleep(running_step)
                 else:
                     p = subprocess.Popen("killall -9 gazebo & killall -9 gzserver  & killall -9 gzclient", shell=True)
                     break

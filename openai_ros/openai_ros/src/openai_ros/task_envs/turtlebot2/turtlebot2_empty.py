@@ -162,21 +162,23 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         rospy.logdebug("Start Set Action ==>"+str(action))
         # We convert the actions to speed movements to send to the parent class CubeSingleDiskEnv
 
+
         if action == 0:  # forward
-            print("going forward")
-            linear_speed = 0.05  # change from 0.05 to 0.15 in exp4!
+            # print("going forward")
+            linear_speed = 0.15  # change from 0.05 to 0.15 in exp4!
             angular_speed = 0.0
             self.last_action = 0
         elif action == 1:  # left
-            print("turning left")
+            # print("turning left")
             linear_speed = 0.1
             angular_speed = 0.5
             self.last_action = 1
         else:  # right
-            print("turning right")
+            # print("turning right")
             linear_speed = 0.1
             angular_speed = -0.5
             self.last_action = 2
+
 
         # if self.combined_action_list[action][0] == 1:
         #     print("turning left")
@@ -234,11 +236,15 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         diff_x = abs(leader_x_position - x_position)
         diff_y = abs(leader_y_position - y_position)
         odometry_array = [round(diff_x, 2), round(diff_y, 2)]
-        print("odometry_array ", odometry_array)
+        # print("odometry_array ", odometry_array)
         ##############################################################################################
 
-        observations = discretized_laser_scan + odometry_array
-        # observations = round(diff_x, 2)  # do this in exp4
+        # observations = discretized_laser_scan + odometry_array
+
+        # observations = [round(diff_x, 2), 0.00]  # exp1-7
+        observations = [round(leader_x_position, 2), round(x_position, 2)]  # exp8
+
+        print("observation: " + str(observations))
 
         rospy.logdebug("Observations==>"+str(observations))
         rospy.logdebug("END Get Observation ==>")
@@ -292,22 +298,40 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         current_position.x = observations[-2]
         current_position.y = observations[-1]
         current_position.z = 0.0
-        #
-        # distance_from_des_point = self.get_distance_from_desired_point(current_position)
-        # distance_difference = distance_from_des_point - self.previous_distance_from_des_point
-        #
-        # self.leader_odom, count = self.get_leader_odom()
-        #
-        # reward = 0
-        #
-        # desired_pose_x = self.leader_odom.pose.pose.position.x - self.desired_distancde.x
-        # desired_pose_y = self.desired_distancde.y
-        #
-        # print("desired_pose_x = ", desired_pose_x)
-        #
-        # follower_pose_x = current_position.x
-        # follower_pose_y = current_position.y
-        #
+
+        distance_from_des_point = self.get_distance_from_desired_point(current_position)
+        distance_difference = distance_from_des_point - self.previous_distance_from_des_point
+
+        self.leader_odom, count = self.get_leader_odom()
+        follower_odom = self.get_odom()
+        reward = 0
+
+        desired_pose_x = self.leader_odom.pose.pose.position.x - self.desired_distancde.x
+        desired_pose_y = self.desired_distancde.y
+
+        follower_pose_x = current_position.x
+        follower_pose_y = current_position.y
+
+        # distance-based reward function (exp7), 3 basic actions, no end of ep reward/penalty
+        # reward = -1 * distance_from_desired_pose
+        if not done:
+            fxfy = numpy.array((follower_odom.pose.pose.position.x, follower_odom.pose.pose.position.y))  # exp8
+            dxdy = numpy.array((desired_pose_x, desired_pose_y))
+
+            # print("follower pose: " + str(fxfy))
+            # print("follower odom: " + str(follower_odom.pose.pose.position.x) + ", " + str(follower_odom.pose.pose.position.y))
+            # print("desired pose: " + str(dxdy))
+
+            follower_pose_diff = numpy.linalg.norm(fxfy - dxdy)
+            reward = -1 * follower_pose_diff
+            print("follower_pose_diff: " + str(follower_pose_diff))
+        else:
+            if self.is_in_desired_position(current_position):
+                reward = self.end_episode_points
+            else:
+                reward = -1 * self.end_episode_points
+
+        # leader_follower_ws
         # if not done:
         #     fxfy = numpy.array((follower_pose_x, follower_pose_y))
         #     dxdy = numpy.array((desired_pose_x, desired_pose_y))
@@ -321,19 +345,27 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         #     print("reward_discount = ", reward_discount)
         #     print("reward = ", reward)
         #     print("-----------------------------------------------")
+        # else:
+        #     if self.is_in_desired_position(current_position):
+        #         reward = self.end_episode_points
+        #     else:
+        #         reward = -1 * self.end_episode_points
 
-        if not done:
-            if self.last_action == 0:  # forward
-                reward = 1
-            elif self.last_action == 1:  # left
-                reward = 0
-            elif self.last_action == 2:  # right
-                reward = 0
-        else:
-            if self.is_in_desired_position(current_position):
-                reward = self.end_episode_points
-            else:
-                reward = -1 * self.end_episode_points
+        # action-based reward function (exp1-5), 3 basic actions, no end of ep reward/penalty
+        # if not done:
+        #     if self.last_action == 0:  # forward
+        #         reward = 1
+        #     elif self.last_action == 1:  # left
+        #         reward = -1  # change from 0 to -1 in exp5
+        #     elif self.last_action == 2:  # right
+        #         reward = -1  # change from 0 to -1 in exp5
+        # else:
+        #     if self.is_in_desired_position(current_position):
+        #         reward = self.end_episode_points
+        #     else:
+        #         reward = -1 * self.end_episode_points
+
+
 
         # print("-----------------------------------------------")
         # print("reward = ", reward)
