@@ -242,7 +242,8 @@ class TurtleBot2EmptyEnv(turtlebot2_env.TurtleBot2Env):
         # observations = discretized_laser_scan + odometry_array
 
         # observations = [round(diff_x, 2), 0.00]  # exp1-7
-        observations = [round(leader_x_position, 2), round(x_position, 2)]  # exp8
+        # observations = [round(leader_x_position, 2), round(x_position, 2)]  # exp8
+	observations = [round(leader_x_position, 2), 0.00]  # lab-exp1
 
         print("observation: " + str(observations))
 
